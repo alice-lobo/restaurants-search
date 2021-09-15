@@ -3,6 +3,11 @@ import styled from 'styled-components';
 
 //import { Text } from '../../components';
 
+export const Wrapper = styled.div`
+  display: flex;
+  flex-direction: row
+`;
+
 export const Container = styled.aside`
   background-color: ${(props) => props.theme.colors.background};
   width: 360px;
@@ -18,18 +23,14 @@ export const Search = styled.section`
   padding: 16px;
 `;
 
+export const Logo = styled.img`
+  margin: 15px;
+`;
 
-// export const Search = styled.section`
-//   display: flex;
-//   flex-direction: column;
-//   justify-content: center;
-//   background-color: #ffffff;
-//   padding: 16px;
-// `;
-
-// export const Logo = styled.img`
-//   margin: 15px;
-// `;
+export const Map = styled.div`
+  background-color: red;
+  width: 500px;
+`;
 
 // export const Title = styled(Text)`
 //   margin: 16px 0;
@@ -41,6 +42,4 @@ export const Search = styled.section`
 //   }
 // `;
 
-// export const Wrapper = styled.div`
-//   display: flex;
-// `;
+
