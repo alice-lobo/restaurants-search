@@ -18,7 +18,7 @@ export const Overlay = styled.div`
   z-index: 999;
 `;
 
-export const dialog = styled.div`
+export const Dialog = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
