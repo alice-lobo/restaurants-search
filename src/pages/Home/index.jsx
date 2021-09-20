@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import TextField, { Input } from '@material/react-text-field';
 import MaterialIcon from '@material/react-material-icon';
 //import Slider from "react-slick";
@@ -13,6 +14,7 @@ const Home = () => {
   const [inputValue, setInputValue] = useState('');
   const [query, setQuery] = useState(null);
   const [modalOpened, setModalOpened] = useState(true);
+  const { restaurants } = useSelector((state) => state.restaurants);
   
   const settings = {
     dots: false,
@@ -41,8 +43,8 @@ const Home = () => {
               trailingIcon={<MaterialIcon role="button" icon="search"/>}
             ><Input
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)} 
-              onKeyPress={handleKeyPress}/>
+              onKeyPress={handleKeyPress}
+              onChange={(e) => setInputValue(e.target.value)} />
             </TextField>
             <CarouselTitle>Na sua Área</CarouselTitle>
             <Carousel {...settings}>
@@ -53,6 +55,7 @@ const Home = () => {
               <Card photo={restaurante} title="nome"/>
             </Carousel>
         </Search>
+        {restaurants.map((restaurant) => <RestaurantCard restaurant={restaurant} />)}
         <RestaurantCard />
       </Container>
       <Map query={query}/>

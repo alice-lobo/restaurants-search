@@ -1,45 +1,48 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { GoogleApiWrapper, Map, Marker } from 'google-maps-react';
 
+import { setRestaurants } from '../../redux/modules/restaurants';
+
 export const MapContainer = (props) => {
+  const dispatch = useDispatch();
+  const { restaurants } = useSelector((state) => state.restaurants);
   const [map, setMap] = useState(null);
-  const { google } = props;
+  const { google, query } = props;
 
+  useEffect(() => {
+    if (query) {
+      searchByQuery(query);
+    }
+  }, [query]);
 
-  const searchByQuery = useCallback(
-    //     (map, query) => {
-    //       const service = new google.maps.places.PlacesService(map);
-    //       dispatch(setRestaurants([]));
-    
-    //       const request = {
-    //         location: map.center,
-    //         radius: '200',
-    //         type: ['restaurant'],
-    //         query,
-    //       };
-    
-    //       service.textSearch(request, (results, status) => {
-    //         if (status === google.maps.places.PlacesServiceStatus.OK) {
-    //           dispatch(setRestaurants(results));
-    //         }
-    //       });
-    //     },
-    //     [dispatch, google]
-    //   );
+  function searchByQuery(query) {
+    const service = new google.maps.places.PlacesService(map);
+
+    const request = {
+      location: map.center,
+      radius: '200',
+      type: ['restaurant'],
+      query,
+    };
+    service.textSearch(request, (results, status) => {
+      if (status === google.maps.places.PlacesServiceStatus.OK) {
+        dispatch(setRestaurants(results));
+      }
+    });
+  }
 
   function searchNearby (map, center) {
     const service = new google.maps.places.PlacesService(map);
-
     const request = {
       location: center,
       radius: '20000',
       type: ['restaurant'],
     };
-    
     service.nearbySearch(request, (results, status) => {
       if (status === google.maps.places.PlacesServiceStatus.OK) {
-        console.log('restaurantes>>>>>', results);
-        //dispatch(setRestaurants(results));
+        console.log('restaurante', results);
+        dispatch(setRestaurants(results));
       }
     });
   };
@@ -48,9 +51,22 @@ export const MapContainer = (props) => {
     setMap(map);
     searchNearby(map, map.center);
   }
-
-  return <Map google={google} centerAroundCurrentLocation onReady={onMapReady} onRecenter={onMapReady}/>
-
+  
+  return (
+    <Map google={google} centerAroundCurrentLocation onReady={onMapReady} onRecenter={onMapReady}>
+      {restaurants.map((restaurant) => (
+        <Marker 
+          key={restaurant.place_id}
+          name={restaurant.name}
+          position={{
+            lat: restaurant.geometry.location.lat(),
+            lng: restaurant.geometry.location.lng(),
+          }}
+        />
+      ))}
+      
+    </ Map>
+  );
 }
 
 export default GoogleApiWrapper({
@@ -59,114 +75,116 @@ export default GoogleApiWrapper({
   })(MapContainer);
 
 
-// import React, { useState, useEffect, useCallback } from 'react';
-// import { useDispatch, useSelector } from 'react-redux';
-// import { GoogleApiWrapper, Map, Marker } from 'google-maps-react';
 
-// import { setRestaurants, setRestaurant } from '../../redux/modules/restaurants';
 
-// export const MapContainer = (props) => {
-//   const dispatch = useDispatch();
-//   const [map, setMap] = useState(null);
-//   const { restaurants } = useSelector((state) => state.restaurants);
-//   const { google, query, placeId } = props;
 
-//   const searchByQuery = useCallback(
-//     (map, query) => {
-//       const service = new google.maps.places.PlacesService(map);
-//       dispatch(setRestaurants([]));
 
-//       const request = {
-//         location: map.center,
-//         radius: '200',
-//         type: ['restaurant'],
-//         query,
-//       };
+  /* 
+ import React, { useState, useEffect, useCallback } from 'react';
+ import { useDispatch, useSelector } from 'react-redux';
+ import { GoogleApiWrapper, Map, Marker } from 'google-maps-react';
+ import { setRestaurants, setRestaurant } from '../../redux/modules/restaurants';
 
-//       service.textSearch(request, (results, status) => {
-//         if (status === google.maps.places.PlacesServiceStatus.OK) {
-//           dispatch(setRestaurants(results));
-//         }
-//       });
-//     },
-//     [dispatch, google]
-//   );
+ export const MapContainer = (props) => {
+   const dispatch = useDispatch();
+   const [map, setMap] = useState(null);
+   const { restaurants } = useSelector((state) => state.restaurants);
+   const { google, query, placeId } = props;
 
-//   const getDetails = useCallback(
-//     (placeId) => {
-//       const service = new google.maps.places.PlacesService(map);
-//       dispatch(setRestaurant(null));
+   const searchByQuery = useCallback(
+     (map, query) => {
+       const service = new google.maps.places.PlacesService(map);
+       dispatch(setRestaurants([]));
 
-//       const request = {
-//         placeId,
-//         fields: ['name', 'opening_hours', 'formatted_address', 'formatted_phone_number'],
-//       };
+       const request = {
+         location: map.center,
+         radius: '200',
+         type: ['restaurant'],
+         query,
+       };
 
-//       service.getDetails(request, (place, status) => {
-//         if (status === google.maps.places.PlacesServiceStatus.OK) {
-//           dispatch(setRestaurant(place));
-//         }
-//       });
-//     },
-//     [google, map, dispatch]
-//   );
+       service.textSearch(request, (results, status) => {
+         if (status === google.maps.places.PlacesServiceStatus.OK) {
+           dispatch(setRestaurants(results));
+         }
+       });
+     },
+     [dispatch, google]
+   );
 
-//   useEffect(() => {
-//     if (query) {
-//       searchByQuery(map, query);
-//     }
-//   }, [searchByQuery, query, map]);
+   const getDetails = useCallback(
+     (placeId) => {
+       const service = new google.maps.places.PlacesService(map);
+       dispatch(setRestaurant(null));
 
-//   useEffect(() => {
-//     if (placeId) {
-//       getDetails(placeId);
-//     }
-//   }, [placeId, getDetails]);
+       const request = {
+         placeId,
+         fields: ['name', 'opening_hours', 'formatted_address', 'formatted_phone_number'],
+       };
 
-//   const searchNearby = (map, center) => {
-//     const service = new google.maps.places.PlacesService(map);
+       service.getDetails(request, (place, status) => {
+         if (status === google.maps.places.PlacesServiceStatus.OK) {
+           dispatch(setRestaurant(place));
+         }
+       });
+     },
+     [google, map, dispatch]
+   );
 
-//     const request = {
-//       location: center,
-//       radius: '20000',
-//       type: ['restaurant'],
-//     };
+   useEffect(() => {
+     if (query) {
+       searchByQuery(map, query);
+     }
+   }, [searchByQuery, query, map]);
+   useEffect(() => {
+     if (placeId) {
+       getDetails(placeId);
+     }
+   }, [placeId, getDetails]);
 
-//     service.nearbySearch(request, (results, status) => {
-//       if (status === google.maps.places.PlacesServiceStatus.OK) {
-//         dispatch(setRestaurants(results));
-//       }
-//     });
-//   };
+   const searchNearby = (map, center) => {
+     const service = new google.maps.places.PlacesService(map);
 
-//   function onMapReady(_, map) {
-//     setMap(map);
-//     searchNearby(map, map.center);
-//   }
+     const request = {
+       location: center,
+       radius: '20000',
+       type: ['restaurant'],
+     };
 
-//   return (
-//     <Map
-//       google={google}
-//       centerAroundCurrentLocation
-//       onReady={onMapReady}
-//       onRecenter={onMapReady}
-//       zoom={15}
-//       {...props}>
-//       {restaurants.map((restaurant) => (
-//         <Marker
-//           key={restaurant.place_id}
-//           name={restaurant.name}
-//           position={{
-//             lat: restaurant.geometry.location.lat(),
-//             lng: restaurant.geometry.location.lng(),
-//           }}
-//         />
-//       ))}
-//     </Map>
-//   );
-// };
+     service.nearbySearch(request, (results, status) => {
+       if (status === google.maps.places.PlacesServiceStatus.OK) {
+         dispatch(setRestaurants(results));
+       }
+     });
+   };
 
-// export default GoogleApiWrapper({
-//   apiKey: process.env.REACT_APP_GOOGLE_API_KEY,
-//   language: 'pt-BR',
-// })(MapContainer);
+   function onMapReady(_, map) {
+     setMap(map);
+     searchNearby(map, map.center);
+   }
+   return (
+     <Map
+       google={google}
+       centerAroundCurrentLocation
+       onReady={onMapReady}
+       onRecenter={onMapReady}
+       zoom={15}
+       {...props}>
+       {restaurants.map((restaurant) => (
+         <Marker
+           key={restaurant.place_id}
+           name={restaurant.name}
+           position={{
+             lat: restaurant.geometry.location.lat(),
+             lng: restaurant.geometry.location.lng(),
+           }}
+         />
+       ))}
+     </Map>
+   );
+ };
+
+ export default GoogleApiWrapper({
+   apiKey: process.env.REACT_APP_GOOGLE_API_KEY,
+   language: 'pt-BR',
+ })(MapContainer); */
